@@ -18,28 +18,34 @@
 */
 package org.apache.cordova.inappbrowser;
 
+import android.view.View;
+import android.view.ViewGroup;
+import android.webkit.GeolocationPermissions.Callback;
+import android.webkit.JsPromptResult;
+import android.webkit.WebChromeClient;
+import android.webkit.WebStorage;
+import android.webkit.WebView;
+import android.widget.FrameLayout;
 import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.LOG;
 import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import android.webkit.JsPromptResult;
-import android.webkit.WebChromeClient;
-import android.webkit.WebStorage;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
-import android.webkit.GeolocationPermissions.Callback;
-
 public class InAppChromeClient extends WebChromeClient {
 
     private CordovaWebView webView;
     private String LOG_TAG = "InAppChromeClient";
     private long MAX_QUOTA = 100 * 1024 * 1024;
+    private boolean isFullscreen;
+    private ViewGroup activityFullScreenView;
+    private FrameLayout fullScreenViewContainer;
 
-    public InAppChromeClient(CordovaWebView webView) {
+    public InAppChromeClient(CordovaWebView webView,ViewGroup activityFullScreenView) {
         super();
         this.webView = webView;
+        this.isFullscreen = false;
+        this.activityFullScreenView = activityFullScreenView;
     }
     /**
      * Handle database quota exceeded notification.
@@ -130,4 +136,32 @@ public class InAppChromeClient extends WebChromeClient {
         return false;
     }
 
+    @Override
+    public void onHideCustomView() {
+        if (isFullscreen) {
+            // Hide the fullScreen view, remove it, and show the non-fullScreen view
+            activityFullScreenView.setVisibility(View.GONE);
+            activityFullScreenView.removeView(fullScreenViewContainer);
+            // Reset fullscreen related variables
+            isFullscreen = false;
+            fullScreenViewContainer = null;
+        }
+    }
+
+    @Override
+    @SuppressWarnings("deprecation")
+    public void onShowCustomView(View view, int requestedOrientation, CustomViewCallback callback) // Available in API level 14+, deprecated in API level 18+
+    {
+        onShowCustomView(view, callback);
+    }
+
+    @Override
+    public void onShowCustomView(View view, CustomViewCallback callback) {
+        FrameLayout frameLayout = (FrameLayout) view;
+        this.isFullscreen = true;
+        this.fullScreenViewContainer = frameLayout;
+        activityFullScreenView.addView(fullScreenViewContainer, new
+                ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        activityFullScreenView.setVisibility(View.VISIBLE);
+    }
 }
