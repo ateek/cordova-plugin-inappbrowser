@@ -21,19 +21,20 @@ package org.apache.cordova.inappbrowser;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import android.provider.Browser;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Browser;
 import android.text.InputType;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
@@ -51,7 +52,6 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
-
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.Config;
 import org.apache.cordova.CordovaArgs;
@@ -736,9 +736,11 @@ public class InAppBrowser extends CordovaPlugin {
                 InAppChromeClient chromeClient = new InAppChromeClient(thatWebView){
                     @Override
                     public void onShowCustomView(View view, CustomViewCallback callback) {
-                        this.setFullScreenView(fullscreenLayout);
                         super.onShowCustomView(view, callback);
                         toolbar.setVisibility(View.GONE);
+                        fullscreenLayout.addView(view, new
+                                ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+                        fullscreenLayout.setVisibility(View.VISIBLE);
                         cordova.getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
                     }
@@ -749,6 +751,8 @@ public class InAppBrowser extends CordovaPlugin {
                         if (getShowLocationBar()) {
                         toolbar.setVisibility(View.VISIBLE);
                         }
+                        fullscreenLayout.setVisibility(View.GONE);
+                        fullscreenLayout.removeAllViews();
                         cordova.getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
                     }
                 };
