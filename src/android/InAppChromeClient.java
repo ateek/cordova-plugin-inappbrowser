@@ -25,7 +25,6 @@ import android.webkit.JsPromptResult;
 import android.webkit.WebChromeClient;
 import android.webkit.WebStorage;
 import android.webkit.WebView;
-import android.widget.FrameLayout;
 import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.LOG;
 import org.apache.cordova.PluginResult;
@@ -37,15 +36,12 @@ public class InAppChromeClient extends WebChromeClient {
     private CordovaWebView webView;
     private String LOG_TAG = "InAppChromeClient";
     private long MAX_QUOTA = 100 * 1024 * 1024;
-    private boolean isFullscreen;
     private ViewGroup activityFullScreenView;
-    private FrameLayout fullScreenViewContainer;
+    private View fullScreenViewContainer;
 
-    public InAppChromeClient(CordovaWebView webView,ViewGroup activityFullScreenView) {
+    public InAppChromeClient(CordovaWebView webView) {
         super();
         this.webView = webView;
-        this.isFullscreen = false;
-        this.activityFullScreenView = activityFullScreenView;
     }
     /**
      * Handle database quota exceeded notification.
@@ -138,12 +134,11 @@ public class InAppChromeClient extends WebChromeClient {
 
     @Override
     public void onHideCustomView() {
-        if (isFullscreen) {
             // Hide the fullScreen view, remove it, and show the non-fullScreen view
+        if (getFullScreenView() != null) {
             activityFullScreenView.setVisibility(View.GONE);
             activityFullScreenView.removeView(fullScreenViewContainer);
             // Reset fullscreen related variables
-            isFullscreen = false;
             fullScreenViewContainer = null;
         }
     }
@@ -157,11 +152,19 @@ public class InAppChromeClient extends WebChromeClient {
 
     @Override
     public void onShowCustomView(View view, CustomViewCallback callback) {
-        FrameLayout frameLayout = (FrameLayout) view;
-        this.isFullscreen = true;
-        this.fullScreenViewContainer = frameLayout;
+        this.fullScreenViewContainer = view;
+        if (getFullScreenView() != null) {
         activityFullScreenView.addView(fullScreenViewContainer, new
                 ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         activityFullScreenView.setVisibility(View.VISIBLE);
+        }
+    }
+
+    public ViewGroup getFullScreenView() {
+        return activityFullScreenView;
+    }
+
+    public void setFullScreenView(ViewGroup activityFullScreenView) {
+        this.activityFullScreenView = activityFullScreenView;
     }
 }

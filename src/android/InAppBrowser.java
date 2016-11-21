@@ -617,7 +617,7 @@ public class InAppBrowser extends CordovaPlugin {
                 main.setOrientation(LinearLayout.VERTICAL);
 
                 // Toolbar layout
-                RelativeLayout toolbar = new RelativeLayout(cordova.getActivity());
+                final RelativeLayout toolbar = new RelativeLayout(cordova.getActivity());
                 //Please, no more black!
                 toolbar.setBackgroundColor(android.graphics.Color.LTGRAY);
                 toolbar.setLayoutParams(new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, this.dpToPixels(44)));
@@ -723,7 +723,7 @@ public class InAppBrowser extends CordovaPlugin {
                 });
 
                 //ViewGroup
-                FrameLayout fullscreenLayout = new FrameLayout(cordova.getActivity());
+                final FrameLayout fullscreenLayout = new FrameLayout(cordova.getActivity());
                 RelativeLayout.LayoutParams frameLayoutParams = new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
                 fullscreenLayout.setLayoutParams(frameLayoutParams);
                 fullscreenLayout.setId(Integer.valueOf(6));
@@ -733,9 +733,10 @@ public class InAppBrowser extends CordovaPlugin {
                 inAppWebView = new WebView(cordova.getActivity());
                 inAppWebView.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
                 inAppWebView.setId(Integer.valueOf(6));
-                InAppChromeClient chromeClient = new InAppChromeClient(thatWebView, fullscreenLayout){
+                InAppChromeClient chromeClient = new InAppChromeClient(thatWebView){
                     @Override
                     public void onShowCustomView(View view, CustomViewCallback callback) {
+                        this.setFullScreenView(fullscreenLayout);
                         super.onShowCustomView(view, callback);
                         toolbar.setVisibility(View.GONE);
                         cordova.getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
@@ -745,7 +746,9 @@ public class InAppBrowser extends CordovaPlugin {
                     @Override
                     public void onHideCustomView() {
                         super.onHideCustomView();
+                        if (getShowLocationBar()) {
                         toolbar.setVisibility(View.VISIBLE);
+                        }
                         cordova.getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
                     }
                 };
